@@ -191,6 +191,23 @@ void mk(const std::string& filename) {
 	file.close();
 }
 
+void rename_file(const std::string& cmd) {
+	std::istringstream iss(cmd);
+	std::string action, oldname, flag, newname;
+	iss >> action >> oldname >> flag >> newname;
+
+	if (oldname.empty() || flag != "-t" || newname.empty()) {
+		std::cerr << "t: usage - t <oldname> -t <newname>\n";
+		return;
+	}
+
+	std::error_code ec;
+	fs::rename(oldname, newname, ec);
+	if (ec) {
+		std::cerr << "t: can't rename  " << oldname << " -> " << newname << ":  " << ec.message() << "\n";
+	}
+}
+
 int main(int argc, char* argv[]) {
     enable_raw_mode();
     bool running = true;
@@ -226,8 +243,10 @@ int main(int argc, char* argv[]) {
                     if (filename.empty()) {
                         std::cerr << "mk: no filename given\n";
                     } else {
-                        mk(filename); // i love pineapple
+                        mk(filename);
                     }
+                } else if (action == "t") {
+                    rename_file(cmd);
                 }
             }
         }
