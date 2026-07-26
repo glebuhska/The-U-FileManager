@@ -6,6 +6,8 @@
 #include <iomanip> 
 #include <thread>
 #include <chrono>
+#include <termios.h>
+#include <unistd.h>
 
 //void print_entries(const std::vector<FileEntry>& entries) {
 //   for (const auto& e : entries) {
@@ -23,8 +25,24 @@
 //        std::cout << e.name << '\n';
 //    }
 //}
+//tak bilo ranshe
+//This is how it used to be
 
 namespace fs = std::filesystem;
+termios orig_termios;
+
+void disable_raw_mode() {
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
+
+
+void enable_raw_mode() {
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    termios raw = orig_termios;
+    raw.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
 
 enum class EntryType {
     File,
@@ -103,8 +121,9 @@ void screen(){
 }
 
 int main(int argc, char* argv[]) {
+	enable_raw_mode();
 	while (true) {
-		// idk
+		// idk ;3
                 screen();
                 fs::path target_path = (argc > 1) ? argv[1] : ".";
                 auto entries = list_directory(target_path);
@@ -112,5 +131,6 @@ int main(int argc, char* argv[]) {
                 std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 
+	disable_raw_mode(); //i love pineapple 
 	return 0;
 }
